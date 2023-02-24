@@ -28,9 +28,10 @@ def check_data():
         info = f"{date_string} The current price of {token} is {price} USDT"
         print(info)
         try:
-            global message, last_info
+            global message, last_info, root
             if last_info != info:
                 message.config(text=info)
+                root.title(price)
                 last_info = info
         except UnboundLocalError as e:
             
