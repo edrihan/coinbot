@@ -9,10 +9,16 @@ tokens = {
    }
 # Define the interval (in seconds)
 interval = 20
+interval *= 1000
 api_url = 'https://api.binance.com/api/v3/ticker/price'
 last_info = None
 
+def update_gui():
+    message.config(text=info)
+    root.title(price)
+
 def check_data():
+    global message, last_info, root, info, price
     for token in tokens:
         params = {'symbol': token}
         response = requests.get(api_url, params=params)
@@ -28,10 +34,10 @@ def check_data():
         info = f"{date_string} The current price of {token} is {price} USDT"
         print(info)
         try:
-            global message, last_info, root
+            
             if last_info != info:
-                message.config(text=info)
-                root.title(price)
+                
+                root.after(interval,update_gui)
                 last_info = info
         except UnboundLocalError as e:
             
@@ -62,7 +68,9 @@ message = tk.Label(root, text="Info about shit\nAnd...")
 # Add the label to the root
 message.pack()
 
-root.after(interval, check_data)
+#root.after(interval, check_data)
+check_data()
+update_gui()
 
 # Start the GUI event loop
 root.mainloop()
