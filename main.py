@@ -1,13 +1,39 @@
 import requests, time, datetime, sched
+from pprint import pprint
+
 import tkinter as tk
+from dotenv import dotenv_values # pip install python-dotenv
+
+config = dotenv_values(".env")  # config = {"USER": "foo", "EMAIL": "foo@example.org"}
+print(config)
+# define the API endpoint for getting exchange info
+url = 'https://api.binance.com/api/v3/exchangeInfo'
+
+# make the API request and get the response
+response = requests.get(url)
+
+# parse the response JSON and extract the token symbols
+data = response.json()
+symbols = data['symbols']
+valid_tokens_binance = set()
+for symbol in symbols:
+    base_asset = symbol['baseAsset']
+    quote_asset = symbol['quoteAsset']
+    valid_tokens_binance.add(base_asset)
+    valid_tokens_binance.add(quote_asset)
+valid_tokens_binance = list(valid_tokens_binance)
+valid_tokens_binance.sort()
+print('\n'.join(valid_tokens_binance))
+
 
 tokens = {
     'AGIXBUSD': {
         'low_trigger': 0.35,
-        'high_trigger': 0.428,
+        'high_trigger': 0.45,
     },
     'ADABUSD':{
-    }
+    },
+    'BTCBUSD':{},
     
    }
 # Define the interval (in seconds)
@@ -31,7 +57,11 @@ def check_data():
         params = {'symbol': token}
         response = requests.get(api_url, params=params)
         data = response.json()
-        price_binance = float(data['price'])
+        try:
+            price_binance = float(data['price'])
+        except KeyError as e:
+            print( '\n'+  f"{token} not found by binance API")
+            raise e
         tokens[token]['price_binance'] = price_binance
         if 'low_trigger' in tokens[token].keys(): 
             low_trigger = tokens[token]['low_trigger']
